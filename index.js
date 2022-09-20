@@ -44,6 +44,17 @@ function main() {
     //initialize matrix
     initMatrix(matrix)
 
-    //
+    //get all cases 
+    let testAmmount = test.TEST.length
+    let testCases = []
+    for(let caseAmmount = 0; caseAmmount < testAmmount; caseAmmount++) {
+        testCases.push(test.TEST[caseAmmount])
+    }
+
+
+    
 
 }
+
+//Autorun main
+main()
