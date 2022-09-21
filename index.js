@@ -1,31 +1,46 @@
 const test = require("./lib/Test1.json")
-const appA = require("./Applications/appA.json")
-const appB = require("./Applications/appB.json")
-const appC = require("./Applications/appC.json")
 
 const appList = []
 
-appList.push(appA)
-appList.push(appB)
-appList.push(appC)
+appList.push(require("./Applications/appA.json"))
+appList.push(require("./Applications/appB.json"))
+appList.push(require("./Applications/appC.json"))
 
 let matrixSizeX = test.MPSOC_SIZE_X
 let matrixSizeY = test.MPSOC_SIZE_Y
 let tasksPerProcessor = test.TASKS_PER_PROCESSOR
-let tasks = test.TEST
 
 class processor {
     constructor(taskAmmount) {
         this.package = 0
-        this.name = ""
         this.taskAmmount = taskAmmount
+        this.taskList = []
+        //blueprint: this.taskList = [{name: ""}]
+    }
+
+    isFull() {
+        return taskList.length === this.taskAmmount
+    }
+    
+    insertTask(taskName) {
+        if(this.isFull()) {
+           console.log("ERROR! TaskList is full!")
+           return 
+        }
+        this.taskList.push({name: taskName.toString()})
     }
 }
 
-const matrix = {sizeX: 0, sizeY: 0, processorMap: []}
+const matrix = {
+    sizeX: 4, 
+    sizeY: 4, 
+    processorMap: [], 
+    getProcessor(x, y) {
+        return this.processorMap[x][y]
+}}
 
 
-function initMatrix(mtx, taskammount) {
+function initMatrix(mtx, taskAmmount) {
 
     if(matrixSizeX < 1 || matrixSizeY < 1) {
         console.log("Eror!, matrix size is too small! Resting to 4...")
@@ -36,7 +51,7 @@ function initMatrix(mtx, taskammount) {
     for(let i = 0; i < matrixSizeX; i++) {
         mtx.processorMap.push(new Array())
         for(let y = 0; y < matrixSizeY; y++) {
-            mtx.processorMap[i].push(new processor(taskammount))
+            mtx.processorMap[i].push(new processor(taskAmmount))
         }
     }
 }
@@ -45,28 +60,12 @@ function getProcessor(x, y) {
     return matrix.processorMap[x][y]
 }
 
-/*function getTestCases(tsks) {
-    try {
-        let testCases = []
-        tsks.forEach((e) => {
-            testCases.push(e)
-        })
-    
-        return testCases
-    }
-    catch(e) {
-        console.error("ERROR! getTestCases function error!", e)
-    }
-    
-}*/
-
 function main() {
 
     //initialize matrix
-    initMatrix(matrix)
-
+    initMatrix(matrix, tasksPerProcessor)
     //get all cases 
-    let testCaseList = tasks // getTestCases(tasks)
+    let testCaseList = test.TEST // getTestCases(tasks)
 
     //Begin applist (appA, appB, appC, etc)
     testCaseList.forEach((testCase, appIndex) => {
@@ -77,7 +76,7 @@ function main() {
         
         //Message for each case
         console.log("\nCASE:", app)
-        console.log(currentApp.grafo_tarefas.length)
+        //console.log(currentApp.grafo_tarefas.length)
         
         //QTD loop
         let caseIndex = 0
@@ -88,8 +87,9 @@ function main() {
             for(let i = 0; i < currentGrafo_tarefas.length; i++) {
                 
                 let taskOrigin = currentGrafo_tarefas[i].tarefa_origem
-                let taskDestiny = currentGrafo_tarefas[i].tarefa_origem
+                let taskDestiny = currentGrafo_tarefas[i].tarefa_destino
                 let pkgAmmount = currentGrafo_tarefas[i].quantidade_pacotes
+
 
                 /*
                 
