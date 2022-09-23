@@ -145,7 +145,7 @@ testCaseList.forEach((testCase, appIndex) => {
                         originX++
                     }
                     auxX += 1
-                } else if(originX < destinyX) {
+                } else if(originX > destinyX) {
                     while(originX != 0) {
                     
                         matrix.processorMap[originX][originY].package += pkgAmmount
