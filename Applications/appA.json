@@ -10,5 +10,11 @@
             "tarefa_destino": "8",
             "quantidade_pacotes": 8
         }
+    ],
+    "task_positions": [
+        {"name": "8", "x": 4, "y": 2},
+        {"name": "9", "x": 6, "y": 5},
+        {"name": "3", "x": 5, "y": 6}
+
     ]
 }
