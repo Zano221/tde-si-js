@@ -6,8 +6,8 @@ appList.push(require("./Applications/appA.json"))
 appList.push(require("./Applications/appB.json"))
 appList.push(require("./Applications/appC.json"))
 
-let matrixSizeX = test.MPSOC_SIZE_X
-let matrixSizeY = test.MPSOC_SIZE_Y
+let matrixSizeX = parseInt(test.MPSOC_SIZE_X, 10)
+let matrixSizeY = parseInt(test.MPSOC_SIZE_Y, 10)
 let tasksPerProcessor = test.TASKS_PER_PROCESSOR
 
 class processor {
@@ -23,7 +23,7 @@ class processor {
         
     }
     
-    insertTask(taskName) {
+    insertTaskToList(taskName) {
         if(this.isFull()) {
            console.log("ERROR! TaskList is full!")
            return 
@@ -39,14 +39,17 @@ const matrix = {
     taskMap: new Map(),
 
     //IMPORTANT FUNCTION: must be called every time a new matrix is invoked (not defining matrix as a class tho)
-    initMatrix(taskAmmount, newSizeX = 4, newSizeY = 4) {
+    initMatrix(taskAmmount, newSizeX, newSizeY) {
 
-        if(newSizeX < 1 || newSizeY < 1) {
+        this.sizeX = newSizeX
+        this.sizeY = newSizeY
+
+        if(this.sizeY < 1 || this.sizeY < 1) {
             console.log("Eror!, matrix size is too small! Reseting to 4...")
-            sizeX = newSizeX
-            sizeY = newSizeY
+            this.sizeX = 4
+            this.sizeY = 4
         }
-    
+        
         for(let i = 0; i < this.sizeX; i++) {
             this.processorMap.push(new Array())
             for(let y = 0; y < this.sizeY; y++) {
@@ -60,7 +63,7 @@ const matrix = {
     },
 
     insertTask(task, x = 0, y = 0) {
-        console.log(this.processorMap[x][y].insertTask(task))
+        this.processorMap[x][y].insertTaskToList(task)
         this.taskMap.set(task, {x: x, y: y})
     },
 
@@ -96,9 +99,7 @@ testCaseList.forEach((testCase, appIndex) => {
         for(let i = 0; i < task_positions.length; i++) {
             
             const x = task_positions[i].x
-            console.log("X:", x)
             const y = task_positions[i].y
-            console.log("Y:", y)
             const name = task_positions[i].name
 
             matrix.insertTask(name, x, y)
@@ -112,18 +113,97 @@ testCaseList.forEach((testCase, appIndex) => {
             let taskDestiny = matrix.findTask(currentGrafo_tarefas[i].tarefa_destino)
             let pkgAmmount = currentGrafo_tarefas[i].quantidade_pacotes
 
-            
-            while(true) {
-                
-                if(taskOrigin.x > taskDestiny.x) {
-                    console.log("negative!")
-                    break
+            //variables for the loop
+            let originX = taskOrigin.x
+            let destinyX = taskDestiny.x
+            let originY = taskOrigin.y
+            let destinyY = taskDestiny.y
+
+
+            let hasReached = false
+
+            console.log("Into originX")
+            while(!hasReachedX) {
+
+                let auxX = originX
+                let auxY = originY
+
+                if((originX == destinyX) && (originY == destinyY)) {
+                    hasReached = true
                 }
 
+                //X Loop
+                if(originX < destinyX) {
+                    while(originX != matrix.sizeX) {
+                    
+                        matrix.processorMap[originX][originY].package += pkgAmmount
+    
+                        if((originX == destinyX) && (originY == destinyY)) {
+                            hasReached = true
+                        }
+
+                        originX++
+                    }
+                    auxX += 1
+                } else if(originX < destinyX) {
+                    while(originX != 0) {
+                    
+                        matrix.processorMap[originX][originY].package += pkgAmmount
+    
+                        if((originX == destinyX) && (originY == destinyY)) {
+                            hasReached = true
+                        }
+
+                        originX--
+                    }
+                    auxX -= 1
+                }
+
+                originX = auxX
+
+
+                if(originY == destinyY) {
+                    hasReachedY = true
+                }
+                
+                //TODO FROM THIS LINE BELOW
+                if(!hasReachedY) {
+                    if(originY < destinyY) {
+                        originY += 1
+                        auxY += 1
+                    } else {
+                        originY -= 1
+                        auxY -= 1
+                    }
+                }
+
+                //Y Loop
+                while(originY != matrix.sizeY && originY > 0) {
+
+                    if(!(originY > matrix.sizeY) && !(originY < 0)) {
+                        matrix.processorMap[originX][originY].package += pkgAmmount
+                    } else {
+                        break
+                    }
+
+                    if(originY < matrix.sizeY) {
+                        originY++
+                    } else if(originY > matrix.sizeY) {
+                        originY--
+                    }
+
+                    if((originX == destinyX) && (originY == destinyY)) {
+                        hasReached = true
+                        break
+                    }
+
+                }
             }
 
             
         }
+                
+
 
 
         caseIndex++
