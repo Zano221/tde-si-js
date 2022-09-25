@@ -41,34 +41,69 @@ const matrix = {
     //IMPORTANT FUNCTION: must be called every time a new matrix is invoked (not defining matrix as a class tho)
     initMatrix(taskAmmount, newSizeX, newSizeY) {
 
-        this.sizeX = newSizeX
-        this.sizeY = newSizeY
-
-        if(this.sizeY < 1 || this.sizeY < 1) {
+        if(newSizeX < 1 || newSizeY < 1) {
             console.log("Eror!, matrix size is too small! Reseting to 4...")
-            this.sizeX = 4
-            this.sizeY = 4
+            newSizeX = 4
+            newSizeY = 4
         }
         
-        for(let i = 0; i < this.sizeX; i++) {
+        for(let i = 0; i < newSizeX; i++) {
             this.processorMap.push(new Array())
-            for(let y = 0; y < this.sizeY; y++) {
+            for(let y = 0; y < newSizeY; y++) {
                 this.processorMap[i].push(new processor(taskAmmount))
             }
         }
+
+        this.sizeX = newSizeX--
+        this.sizeY = newSizeY--
     },
 
     getProcessor(x, y) {
         return this.processorMap[x][y]
     },
 
+    isProcessorAvailable(x, y) {
+        return !this.getProcessor(x, y).isFull()
+    },
+
     insertTask(task, x = 0, y = 0) {
+
+        if(x > this.sizeX-1 || y > this.sizeY-1) {
+            console.warn("ERROR! Attempt to insert task beyond matrix limit!")
+            return
+        }
+        
+        if(!this.isProcessorAvailable(x, y)) {
+            console.warn("WARNING!, current taskList at X:", x, ",Y:", y, ",name:", task, "is full! Placing at...") //Error handler
+            
+            //ELIF SPAGHETTI CODE DONT LOOK
+            //Try to find a new place to insert task
+            if(!this.isProcessorAvailable(x+1, y) && x < this.sizeX-1) {
+                x += 1
+            } else if(!this.isProcessorAvailable(x-1,y) && x > 0) {
+                x -=1
+            } else if(!this.isProcessorAvailable(x, y+1) && y < this.sizeY-1) {
+                y +=1
+            } else if(!this.isProcessorAvailable(x, y-1) && y > 0) {
+                y -=1
+            } else {
+                console.warn("ERROR! All tasks from all side processors are full! Task will not be inserted!")
+                return
+            }
+
+            console.warn("new place, X:", x, ",Y:", y)
+        }
+
         this.processorMap[x][y].insertTaskToList(task)
         this.taskMap.set(task, {x: x, y: y})
     },
 
     findTask(task) {
         return this.taskMap.get(task)
+    },
+
+    insertPackage(y,x, pkg) {
+        
     }
 }
 
@@ -122,27 +157,32 @@ testCaseList.forEach((testCase, appIndex) => {
 
             let hasReached = false
 
-            console.log("Into originX")
-            while(!hasReachedX) {
+            while(!hasReached) {
 
                 let auxX = originX
                 let auxY = originY
 
                 if((originX == destinyX) && (originY == destinyY)) {
                     hasReached = true
+
+                    if(matrix.getProcessor(originX, originY).package == 0) {
+                        matrix.processorMap[originX][originY].package += pkgAmmount
+                    }
                 }
 
+                console.log("Into originX")
                 //X Loop
                 if(originX < destinyX) {
                     while(originX != matrix.sizeX) {
-                    
+                        
                         matrix.processorMap[originX][originY].package += pkgAmmount
-    
+                        
                         if((originX == destinyX) && (originY == destinyY)) {
                             hasReached = true
+                        } else {
+                            originX++
                         }
 
-                        originX++
                     }
                     auxX += 1
                 } else if(originX > destinyX) {
@@ -152,52 +192,32 @@ testCaseList.forEach((testCase, appIndex) => {
     
                         if((originX == destinyX) && (originY == destinyY)) {
                             hasReached = true
+                        } else {    
+                            originX--
                         }
 
-                        originX--
                     }
                     auxX -= 1
                 }
 
                 originX = auxX
-
-
-                if(originY == destinyY) {
-                    hasReachedY = true
-                }
                 
                 //TODO FROM THIS LINE BELOW
-                if(!hasReachedY) {
-                    if(originY < destinyY) {
-                        originY += 1
-                        auxY += 1
-                    } else {
-                        originY -= 1
-                        auxY -= 1
+
+                if(originY < destinyY) {
+                    while(originY != matrix.sizeY) {
+
+
+
+                    }
+                }else if(originY > destiny) {
+                    while(originY != matrix.size) {
+
                     }
                 }
 
                 //Y Loop
-                while(originY != matrix.sizeY && originY > 0) {
-
-                    if(!(originY > matrix.sizeY) && !(originY < 0)) {
-                        matrix.processorMap[originX][originY].package += pkgAmmount
-                    } else {
-                        break
-                    }
-
-                    if(originY < matrix.sizeY) {
-                        originY++
-                    } else if(originY > matrix.sizeY) {
-                        originY--
-                    }
-
-                    if((originX == destinyX) && (originY == destinyY)) {
-                        hasReached = true
-                        break
-                    }
-
-                }
+                
             }
 
             
