@@ -20,12 +20,5 @@
             "tarefa_destino": "Z",
             "quantidade_pacotes": 2
         }
-    ],
-    "task_positions": [
-        {"name": "W", "x": 2, "y": 0},
-        {"name": "F", "x": 0, "y": 4},
-        {"name": "Z", "x": 4, "y": 6},
-        {"name": "X", "x": 7, "y": 0},
-        {"name": "F", "x": 1, "y": 3}
     ]
 }

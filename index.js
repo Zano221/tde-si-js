@@ -14,21 +14,21 @@ class processor {
     constructor(tasksPerProcessor) {
         this.package = 0
         this.taskLimit = tasksPerProcessor
-        this.taskList = []
+        this.processorTaskList = []
         //blueprint: this.taskList = [{name: ""}]
     }
 
     isFull() {
-        return this.taskList.length >= this.taskLimit
+        return this.processorTaskList.length >= this.taskLimit
         
     }
     
     insertTaskToList(taskName) {
         if(this.isFull()) {
-           console.log("ERROR! TaskList is full!")
+           console.log("ERROR! processorTaskList is full!")
            return 
         }
-        this.taskList.push({name: taskName.toString()})
+        this.processorTaskList.push({name: taskName.toString()})
     }
 }
 
@@ -53,9 +53,6 @@ const matrix = {
                 this.processorMap[i].push(new processor(taskAmmount))
             }
         }
-
-        this.sizeX = newSizeX--
-        this.sizeY = newSizeY--
     },
 
     getProcessor(x, y) {
@@ -68,7 +65,9 @@ const matrix = {
 
     insertTask(task, x = 0, y = 0) {
 
-        if(x > this.sizeX-1 || y > this.sizeY-1) {
+        console.log("Insertin Task", task, "at position", x, y, "taskList length", this.processorMap[x][y].processorTaskList.length)
+
+        /*if(x > this.sizeX-1 || y > this.sizeY-1) {
             console.warn("ERROR! Attempt to insert task beyond matrix limit!")
             return
         }
@@ -80,7 +79,7 @@ const matrix = {
             //Try to find a new place to insert task
             if(!this.isProcessorAvailable(x+1, y) && x < this.sizeX-1) {
                 x += 1
-            } else if(!this.isProcessorAvailable(x-1,y) && x > 0) {
+            }/* else if(!this.isProcessorAvailable(x-1,y) && x > 0) {
                 x -=1
             } else if(!this.isProcessorAvailable(x, y+1) && y < this.sizeY-1) {
                 y +=1
@@ -92,7 +91,7 @@ const matrix = {
             }
 
             console.warn("new place, X:", x, ",Y:", y)
-        }
+        }*/
 
         this.processorMap[x][y].insertTaskToList(task)
         this.taskMap.set(task, {x: x, y: y})
@@ -102,8 +101,8 @@ const matrix = {
         return this.taskMap.get(task)
     },
 
-    insertPackage(y,x, pkg) {
-        
+    insertPackage(x, y, pkg) {
+       matrix.processorMap[x][y].package += pkg 
     }
 }
 
@@ -123,30 +122,86 @@ testCaseList.forEach((testCase, appIndex) => {
     
     //Message for each case
     console.log("\nCASE:", app)
-    //console.log(currentApp.grafo_tarefas.length)
+
+    //map all tasks
+    let taskList = []
+
     
-    //QTD loop
-    let caseIndex = 0
-    while(caseIndex < qtd) {
-
-        //map all tasks
-        let task_positions = currentApp.task_positions
-        for(let i = 0; i < task_positions.length; i++) {
+    let currentGrafo_tarefas = currentApp.grafo_tarefas
+    for(let i = 0; i < currentGrafo_tarefas.length; i++) {
             
-            const x = task_positions[i].x
-            const y = task_positions[i].y
-            const name = task_positions[i].name
 
-            matrix.insertTask(name, x, y)
+        let taskOrigin = currentGrafo_tarefas[i].tarefa_origem
+        let taskDestiny = currentGrafo_tarefas[i].tarefa_destino
+
+        if(!taskList.includes(taskOrigin)) {
+            taskList.push(taskOrigin)
         }
 
+        if(!taskList.includes(taskDestiny)) {
+            taskList.push(taskDestiny)
+        }          
+    }    
+
+    //QTD loop
+    let caseIndex = 0
+    let startPos = 0
+    let taskListHead = 0
+
+    let x = 0
+    let y = 0
+    while(caseIndex < qtd) {
+        
+        
+
+        x = startPos
+        console.log(x, y)
+        while(x < matrix.sizeX) {
+            for(let n = 0; n < tasksPerProcessor; n++) {
+
+                if(taskListHead == taskList.length-1) {
+                    taskListHead = 0
+                }
+
+                matrix.insertTask(taskList[taskListHead], x, y)
+                
+                taskListHead++
+            }
+            x++
+        }
+
+        startPos++
+
+        x= startPos
+        y = startPos
+        console.log(x, y)
+        while(y < matrix.sizeY) {
+            for(let n = 0; n < tasksPerProcessor; n++) {
+
+                if(taskListHead == taskList.length-1) {
+                    taskListHead = 0
+                }
+
+                matrix.insertTask(taskList[taskListHead], x, y)
+
+                taskListHead++
+
+            }
+
+            y++
+        }
+        
+        startPos++
+
         //actual task loop
-        let currentGrafo_tarefas = currentApp.grafo_tarefas
-        for(let i = 0; i < currentGrafo_tarefas.length; i++) {
+        /*for(let i = 0; i < currentGrafo_tarefas.length; i++) {
             
-            let taskOrigin = matrix.findTask(currentGrafo_tarefas[i].tarefa_origem)
-            let taskDestiny = matrix.findTask(currentGrafo_tarefas[i].tarefa_destino)
+
+            
+
             let pkgAmmount = currentGrafo_tarefas[i].quantidade_pacotes
+
+
 
             //variables for the loop
             let originX = taskOrigin.x
@@ -221,10 +276,20 @@ testCaseList.forEach((testCase, appIndex) => {
             }
 
             
-        }
-                
+        }*/
 
 
+        //Print Matrix
+        /*for(let y = 0; y < matrix.sizeY; y++) {
+            for(let x = 0; x < matrix.sizeX; x++) {
+
+                console.log(matrix.getProcessor(x, y).processorTaskList)
+
+            }
+            console.log("")
+        }*/
+
+        //RESET MATRIX
 
         caseIndex++
     }
