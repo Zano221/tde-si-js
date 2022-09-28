@@ -30,6 +30,17 @@ class processor {
         }
         this.processorTaskList.push({name: taskName.toString()})
     }
+
+    clear() {
+        let length = this.processorTaskList.length
+        if(length != 0) {
+            for(let i = 0; i < length; i++) {
+                this.processorTaskList.pop()
+
+            }
+        }
+
+    }
 }
 
 const matrix = {
@@ -37,22 +48,43 @@ const matrix = {
     sizeY: 4, 
     processorMap: [], 
     taskMap: new Map(),
+    taskLimit: 0,
+    qtd: 0,
 
     //IMPORTANT FUNCTION: must be called every time a new matrix is invoked (not defining matrix as a class tho)
-    initMatrix(taskAmmount, newSizeX, newSizeY) {
+    initResetMatrix(taskAmmount, newSizeX, newSizeY, qtd = 0) {
 
-        if(newSizeX < 1 || newSizeY < 1) {
+        this.qtd = qtd        
+        this.sizeX = newSizeX
+        this.sizeY = newSizeY
+
+        if(this.sizeX < 1 || this.sizeY < 1) {
             console.log("Eror!, matrix size is too small! Reseting to 4...")
-            newSizeX = 4
-            newSizeY = 4
+            this.sizeX = 4
+            this.sizeY = 4
         }
         
-        for(let i = 0; i < newSizeX; i++) {
+        for(let i = 0; i < this.sizeX; i++) {
             this.processorMap.push(new Array())
-            for(let y = 0; y < newSizeY; y++) {
+            for(let y = 0; y < this.sizeY; y++) {
                 this.processorMap[i].push(new processor(taskAmmount))
             }
         }
+
+        this.taskLimit = taskAmmount
+    },
+
+    resetMatrix() {
+
+        for(let y = 0; y < this.sizeY; y++) {
+            for(let x = 0; x <this.sizeX; x++) {
+                let processor = this.getProcessor(x, y)
+                
+                processor.clear()
+
+            }
+        }
+        
     },
 
     getProcessor(x, y) {
@@ -64,8 +96,7 @@ const matrix = {
     },
 
     insertTask(task, x = 0, y = 0) {
-
-        console.log("Insertin Task", task, "at position", x, y, "taskList length", this.processorMap[x][y].processorTaskList.length)
+        //console.log("Inserting Task", task, "at position", x, y, "taskList length", this.processorMap[x][y].processorTaskList.length)
 
         /*if(x > this.sizeX-1 || y > this.sizeY-1) {
             console.warn("ERROR! Attempt to insert task beyond matrix limit!")
@@ -94,6 +125,14 @@ const matrix = {
         }*/
 
         this.processorMap[x][y].insertTaskToList(task)
+
+        if(this.taskMap.has(task)) {
+
+            for(let i = 0; i < this.qtd; i++) {
+                task = task + "_" + i.toString()
+            }
+        }
+
         this.taskMap.set(task, {x: x, y: y})
     },
 
@@ -107,7 +146,7 @@ const matrix = {
 }
 
 //initialize matrix
-matrix.initMatrix(tasksPerProcessor, matrixSizeX, matrixSizeY)
+matrix.initMatrix(tasksPerProcessor, matrixSizeX, matrixSizeY, testCase.QTD)
 //get all cases 
 let testCaseList = test.TEST // getTestCases(tasks)
 
@@ -155,11 +194,11 @@ testCaseList.forEach((testCase, appIndex) => {
         
 
         x = startPos
-        console.log(x, y)
+        y = startPos
         while(x < matrix.sizeX) {
             for(let n = 0; n < tasksPerProcessor; n++) {
 
-                if(taskListHead == taskList.length-1) {
+                if(taskListHead == taskList.length) {
                     taskListHead = 0
                 }
 
@@ -172,13 +211,13 @@ testCaseList.forEach((testCase, appIndex) => {
 
         startPos++
 
-        x= startPos
+        x = startPos-1
         y = startPos
         console.log(x, y)
         while(y < matrix.sizeY) {
             for(let n = 0; n < tasksPerProcessor; n++) {
 
-                if(taskListHead == taskList.length-1) {
+                if(taskListHead == taskList.length) {
                     taskListHead = 0
                 }
 
@@ -191,9 +230,10 @@ testCaseList.forEach((testCase, appIndex) => {
             y++
         }
         
-        startPos++
 
-        //actual task loop
+        //task loop
+        
+
         /*for(let i = 0; i < currentGrafo_tarefas.length; i++) {
             
 
@@ -277,23 +317,41 @@ testCaseList.forEach((testCase, appIndex) => {
 
             
         }*/
+        
 
 
-        //Print Matrix
-        /*for(let y = 0; y < matrix.sizeY; y++) {
-            for(let x = 0; x < matrix.sizeX; x++) {
-
-                console.log(matrix.getProcessor(x, y).processorTaskList)
-
-            }
-            console.log("")
-        }*/
-
-        //RESET MATRIX
+        
 
         caseIndex++
     }
 
+    //Print Matrix
+    console.log("----------TASK MAP----------")
+    for(let y = matrix.sizeY-1; y >= 0; y--) {
+        for(let x = 0; x < matrix.sizeX; x++) {
+
+            process.stdout.write("|[")
+
+            matrix.getProcessor(x,y).processorTaskList.forEach((task, index) => {
+                process.stdout.write(task.name)
+                
+                if(index % 2 == 0) {
+                    process.stdout.write(",")
+                }
+
+            })
+
+            process.stdout.write("]|")
+        }
+        console.log("")
+    }
+
+    console.log("----------HEAT MAP----------")
+
+    //RESET MATRIX
+    matrix.resetMatrix()
+
+    console.log("REFERENCE", matrix.getProcessor(0,0).processorTaskList)
 
 })
 
