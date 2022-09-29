@@ -52,7 +52,7 @@ const matrix = {
     qtd: 0,
 
     //IMPORTANT FUNCTION: must be called every time a new matrix is invoked (not defining matrix as a class tho)
-    initResetMatrix(taskAmmount, newSizeX, newSizeY, qtd = 0) {
+    initMatrix(taskAmmount, newSizeX, newSizeY, qtd = 0) {
 
         this.qtd = qtd        
         this.sizeX = newSizeX
@@ -146,7 +146,7 @@ const matrix = {
 }
 
 //initialize matrix
-matrix.initMatrix(tasksPerProcessor, matrixSizeX, matrixSizeY, testCase.QTD)
+matrix.initMatrix(tasksPerProcessor, matrixSizeX, matrixSizeY)
 //get all cases 
 let testCaseList = test.TEST // getTestCases(tasks)
 
@@ -186,27 +186,42 @@ testCaseList.forEach((testCase, appIndex) => {
     let caseIndex = 0
     let startPos = 0
     let taskListHead = 0
+    let hasReached = false
 
     let x = 0
     let y = 0
-    while(caseIndex < qtd) {
-        
-        
+    let taskMapLoopAmmount = taskList.length * qtd
+    while(!hasReached) {
 
         x = startPos
         y = startPos
-        while(x < matrix.sizeX) {
+        while(x < matrix.sizeX && !hasReached) {
             for(let n = 0; n < tasksPerProcessor; n++) {
 
                 if(taskListHead == taskList.length) {
                     taskListHead = 0
                 }
 
-                matrix.insertTask(taskList[taskListHead], x, y)
+                if(caseIndex == taskMapLoopAmmount-1) {
+                    hasReached = true
+                    break
+                }
+
+                try {
+                    matrix.insertTask(taskList[taskListHead], x, y)
+                }catch(e) {
+                    console.log("Exception caught lol",x, y)
+                }
+                
                 
                 taskListHead++
+                caseIndex++
             }
             x++
+        }
+        
+        if(hasReached) {
+            break
         }
 
         startPos++
@@ -214,20 +229,32 @@ testCaseList.forEach((testCase, appIndex) => {
         x = startPos-1
         y = startPos
         console.log(x, y)
-        while(y < matrix.sizeY) {
+        while(y < matrix.sizeY && !hasReached) {
             for(let n = 0; n < tasksPerProcessor; n++) {
 
                 if(taskListHead == taskList.length) {
                     taskListHead = 0
                 }
 
+                if(caseIndex == taskMapLoopAmmount-1) {
+                    hasReached = true
+                    break
+                }
+
                 matrix.insertTask(taskList[taskListHead], x, y)
 
                 taskListHead++
+                caseIndex++
 
             }
 
             y++
+
+        }
+
+        if(x == matrix.sizeX-1 && y == matrix.sizeY) {
+            console.error("MATRIX REACHED IT'S LIMIT, SHUTTING DOWN MAPPING")
+            break
         }
         
 
@@ -318,11 +345,6 @@ testCaseList.forEach((testCase, appIndex) => {
             
         }*/
         
-
-
-        
-
-        caseIndex++
     }
 
     //Print Matrix
