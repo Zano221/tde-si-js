@@ -354,16 +354,36 @@ testCaseList.forEach((testCase, appIndex) => {
 
             process.stdout.write("|[")
 
-            matrix.getProcessor(x,y).processorTaskList.forEach((task, index) => {
+            let processor = matrix.getProcessor(x,y)
+
+            processor.processorTaskList.forEach((task, index) => {
                 process.stdout.write(task.name)
                 
-                if(index % 2 == 0) {
+                if(index+1 != processor.processorTaskList.length) {
                     process.stdout.write(",")
                 }
 
             })
+            
+            let fillProcessor = processor.processorTaskList.length
+            
 
-            process.stdout.write("]|")
+            if(fillProcessor < tasksPerProcessor && processor.processorTaskList.length > 0) {
+                process.stdout.write(",")
+            }
+
+            while(fillProcessor < tasksPerProcessor) {
+
+                process.stdout.write("0")
+
+                if(fillProcessor+1 != tasksPerProcessor) {
+                    process.stdout.write(",")
+                }
+
+                fillProcessor++
+            }
+
+            process.stdout.write("]| ")
         }
         console.log("")
     }
