@@ -40,6 +40,8 @@ class processor {
             }
         }
 
+        this.package = 0
+
     }
 }
 
@@ -82,7 +84,6 @@ const matrix = {
                 let processor = this.getProcessor(x, y)
                 
                 processor.clear()
-
             }
         }
 
@@ -142,18 +143,15 @@ matrix.initMatrix(tasksPerProcessor, matrixSizeX, matrixSizeY, 5)
 //get all cases 
 let testCaseList = test.TEST // getTestCases(tasks)
 
-//GET TASK POSITIONS ----------------------------------------------------------------
-
 //Begin applist (appA, appB, appC, etc)
 testCaseList.forEach((testCase, appIndex) => {
     let app = testCase.APP
-    let qtd = testCase.QTD
     let currentApp = appList[appIndex]
 
-    matrix.setQTD(qtd)
+    matrix.setQTD(testCase.QTD)
     
     //Message for each case
-    console.log("\nCASE:", app)
+    console.log("\n==========> CASO", app, " <==========\n")
 
     //map all tasks
     let taskList = []
@@ -172,7 +170,7 @@ testCaseList.forEach((testCase, appIndex) => {
 
         if(!taskList.includes(taskDestiny)) {
             taskList.push(taskDestiny)
-        }          
+        }
     }    
 
     //QTD loop
@@ -183,7 +181,7 @@ testCaseList.forEach((testCase, appIndex) => {
 
     let x = 0
     let y = 0
-    let taskMapLoopAmmount = taskList.length * qtd
+    let taskMapLoopAmmount = taskList.length * matrix.qtd
     while(!hasReached) {
 
         x = startPos
@@ -221,7 +219,6 @@ testCaseList.forEach((testCase, appIndex) => {
 
         x = startPos-1
         y = startPos
-        console.log(x, y)
         while(y < matrix.sizeY && !hasReached) {
             for(let n = 0; n < tasksPerProcessor; n++) {
 
@@ -245,104 +242,123 @@ testCaseList.forEach((testCase, appIndex) => {
 
         }
 
-        if(x == matrix.sizeX-1 && y == matrix.sizeY) {
+        if(x == matrix.sizeX-1 && y == matrix.sizeY-1) {
             console.error("MATRIX REACHED IT'S LIMIT, SHUTTING DOWN MAPPING")
             break
         }
         
+    }
 
-        //task loop
+    //ACTUAL TASK LOOP
+    for(let i = 0; i < matrix.qtd; i++) {
+
+        console.log("\n===[ LOOP DE RELACIONAMENTO INICIADO QTD:", matrix.qtd, "]===\n")
+
+        for(let n = 0; n < currentGrafo_tarefas.length; n++) {
+
+            const currentGrafo = currentGrafo_tarefas[n]
+            const taskOrigin = currentGrafo.tarefa_origem
+            const taskDestiny = currentGrafo.tarefa_destino
+
+            let taskOriginPos = matrix.taskMap.get(taskOrigin + "_" + i.toString())
+            let taskDestinyPos = matrix.taskMap.get(taskDestiny + "_" + i.toString())
+            let pkg = currentGrafo.quantidade_pacotes
+
+            let isTaskOriginRepeated = false
+            let isTaskDestinyRepeated = false
         
-
-
-        /*for(let i = 0; i < currentGrafo_tarefas.length; i++) {
-            
-
-            
-
-            let pkgAmmount = currentGrafo_tarefas[i].quantidade_pacotes
-
-
-
-            //variables for the loop
-            let originX = taskOrigin.x
-            let destinyX = taskDestiny.x
-            let originY = taskOrigin.y
-            let destinyY = taskDestiny.y
-
-
-            let hasReached = false
-
-            while(!hasReached) {
-
-                let auxX = originX
-                let auxY = originY
-
-                if((originX == destinyX) && (originY == destinyY)) {
-                    hasReached = true
-
-                    if(matrix.getProcessor(originX, originY).package == 0) {
-                        matrix.processorMap[originX][originY].package += pkgAmmount
-                    }
-                }
-
-                console.log("Into originX")
-                //X Loop
-                if(originX < destinyX) {
-                    while(originX != matrix.sizeX) {
-                        
-                        matrix.processorMap[originX][originY].package += pkgAmmount
-                        
-                        if((originX == destinyX) && (originY == destinyY)) {
-                            hasReached = true
-                        } else {
-                            originX++
-                        }
-
-                    }
-                    auxX += 1
-                } else if(originX > destinyX) {
-                    while(originX != 0) {
-                    
-                        matrix.processorMap[originX][originY].package += pkgAmmount
-    
-                        if((originX == destinyX) && (originY == destinyY)) {
-                            hasReached = true
-                        } else {    
-                            originX--
-                        }
-
-                    }
-                    auxX -= 1
-                }
-
-                originX = auxX
+            if(taskOriginPos === undefined) {
+                isTaskOriginRepeated = true
+                let hasFoundTask = false
                 
-                //TODO FROM THIS LINE BELOW
+                let pos = i
 
-                if(originY < destinyY) {
-                    while(originY != matrix.sizeY) {
+                while(!hasFoundTask) {
+                    taskOrigin = matrix.taskMap.get(currentGrafo.tarefa_origem + "_" + (pos-1).toString())
 
-
-
+                    if(taskOrigin !== undefined) {
+                        hasFoundTask = true
                     }
-                }else if(originY > destiny) {
-                    while(originY != matrix.size) {
 
-                    }
+                    pos--
                 }
+            }
 
-                //Y Loop
-                
+            if(taskDestinyPos === undefined) {
+                isTaskDestinyRepeated = true
+                let hasFoundTask = false
+
+                let pos = i
+
+                while(!hasFoundTask) {
+                    taskDestinyPos = matrix.taskMap.get(currentGrafo.tarefa_destino + "_" + (pos-1).toString())
+
+                    if(taskDestinyPos !== undefined) {
+                        hasFoundTask = true
+                    }
+                    pos--
+                }
+            }
+
+           if(taskOriginPos.x == taskDestinyPos.x && taskOriginPos.y == taskDestinyPos.y) {
+
+
+                if(matrix.qtd > 1) {
+                    if(matrix.taskMap.has(taskDestiny + "_" + (i+1))) {
+                        taskDestinyPos = matrix.taskMap.get(taskDestiny + "_" + (i+1))
+                    } else {
+                        taskDestinyPos = matrix.taskMap.get(taskDestiny + "_" + (i-1))
+                    } 
+                    console.log("A Origem {", taskOrigin, "} e o destino {",
+                    taskDestiny, "} ocupam a mesma posição! Mudando o destino para: X:",
+                    taskDestinyPos.x, "Y:", taskDestinyPos.y)
+                }
             }
 
             
-        }*/
-        
+            let hasTaskReached = false
+            let x = taskOriginPos.x 
+            let y = taskOriginPos.y
+
+            console.log("\nPOSIÇÃO ORIGEM {", taskOrigin, "} INICIAL X:", x, "Y:", y, "\n")
+
+            while(!hasTaskReached) {
+
+                matrix.insertPackage(x, y, 1)
+
+                if(x == taskDestinyPos.x && y == taskDestinyPos.y) {
+                    hasTaskReached = true
+                    console.log("\n-----> PACOTE {", taskOrigin, "} CHEGOU AO DESTINO <-----\n")
+                    break
+                }
+
+                if(x < taskDestinyPos.x) {
+                    x++
+                    console.log("PASSO X -( X:", x, "Y:", y, ")-")
+                }else if(x > taskDestinyPos.x) {
+                    x--
+                    console.log("PASSO X -( X:", x, "Y:", y, ")-")
+                }
+
+                if(y < taskDestinyPos.y) {
+                    y++
+                    console.log("PASSO Y -( X:", x, "Y:", y, ")-")
+                }else if(y > taskDestinyPos.y) {
+                    y--
+                    console.log("PASSO Y -( X:", x, "Y:", y, ")-")
+                }
+
+            }
+            
+            
+        }
+
+
+
     }
 
     //Print Matrix
-    console.log("\n--------------------> TASK MAP <--------------------\n")
+    console.log("\n|====================> TASK MAP <====================|\n")
     for(let y = matrix.sizeY-1; y >= 0; y--) {
         for(let x = 0; x < matrix.sizeX; x++) {
 
@@ -381,31 +397,24 @@ testCaseList.forEach((testCase, appIndex) => {
         }
         console.log("")
     }
+    
 
-    console.log("\n--------------------> HEAT MAP <--------------------\n")
-
+    console.log("\n|====================> HEAT MAP <====================|\n")
     for(let y = matrix.sizeY-1; y >= 0; y--) {
-        for(let i = 0; i < matrix.sizeX; i++) {
+        for(let x = 0; x < matrix.sizeX; x++) {
 
-            const processor = matrix.getProcessor(x,y)
-            process.stdout.write("|[")
+            //const processor = matrix.getProcessor(x,y)
+            process.stdout.write("|[ ")
 
-            process.stdout.write(processor.package.toString())
+            process.stdout.write(matrix.processorMap[x][y].package.toString())
 
-            process.stdout.write("]|")
+            process.stdout.write(" ]| ")
 
         }
 
         console.log("")
     }
 
-    console.log(matrix.taskMap)
-
     //RESET MATRIX
     matrix.resetMatrix()
-
-    console.log("REFERENCE", matrix.getProcessor(0,0).processorTaskList)
-
 })
-
-
